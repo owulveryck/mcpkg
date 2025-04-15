@@ -2,8 +2,10 @@ package kg
 
 import "strings"
 
-// ListPredicatesFromNode returns all predicates from the node identified by subject
-// If node is not found, it returns nil
+// ListPredicatesFromNode returns all predicates originating from the node identified by subject.
+// The caseSensitiveSearch parameter determines if the node lookup is case-sensitive.
+// If the node is not found, it returns nil.
+// If the node has no outgoing predicates, it returns an empty slice.
 func (kg *KG) ListPredicatesFromNode(subject string, caseSensitiveSearch bool) []*Predicate {
 	// Check for nil graph
 	if kg == nil {
@@ -33,8 +35,10 @@ func (kg *KG) ListPredicatesFromNode(subject string, caseSensitiveSearch bool) [
 	return predicates
 }
 
-// ListPredicatesToNode returns all predicates to the node identified by subject
-// If node is not found, it returns nil
+// ListPredicatesToNode returns all predicates pointing to the node identified by subject.
+// The caseSensitiveSearch parameter determines if the node lookup is case-sensitive.
+// If the node is not found, it returns nil.
+// If the node has no incoming predicates, it returns an empty slice.
 func (kg *KG) ListPredicatesToNode(subject string, caseSensitiveSearch bool) []*Predicate {
 	// Check for nil graph
 	if kg == nil {
@@ -64,8 +68,10 @@ func (kg *KG) ListPredicatesToNode(subject string, caseSensitiveSearch bool) []*
 	return predicates
 }
 
-// PredicatesFromTo returns all the predicates that links the node identified by fromSubject to the node identified by toSubject
-// returns nil if no link is found or if fromSubject or toSubject does not exists
+// PredicatesFromTo returns all the predicates that link the node identified by fromSubject 
+// to the node identified by toSubject.
+// The caseSensitiveSearch parameter determines if the node lookup is case-sensitive.
+// Returns nil if no link is found or if fromSubject or toSubject do not exist.
 func (kg *KG) PredicatesFromTo(fromSubject, toSubject string, caseSensitiveSearch bool) []*Predicate {
 	// Check for nil graph
 	if kg == nil {
@@ -100,7 +106,10 @@ func (kg *KG) PredicatesFromTo(fromSubject, toSubject string, caseSensitiveSearc
 }
 
 // QueryBySubject returns all predicates and objects for a given subject.
+// The result is a map where keys are predicate subjects and values are arrays of object lexical values.
+// The caseSensitiveSearch parameter determines if the node lookup is case-sensitive.
 // It returns nil if the subject is not found.
+// If the subject exists but has no outgoing connections, it returns an empty map.
 func (kg *KG) QueryBySubject(subject string, caseSensitiveSearch bool) map[string][]string {
 	// Check for nil graph
 	if kg == nil {
@@ -143,7 +152,10 @@ func (kg *KG) QueryBySubject(subject string, caseSensitiveSearch bool) map[strin
 }
 
 // QueryByObject returns all subjects and predicates pointing to a given object.
+// The result is a map where keys are predicate subjects and values are arrays of subject lexical values.
+// The caseSensitiveSearch parameter determines if the node lookup is case-sensitive.
 // It returns nil if the object is not found.
+// If the object exists but has no incoming connections, it returns an empty map.
 func (kg *KG) QueryByObject(object string, caseSensitiveSearch bool) map[string][]string {
 	// Check for nil graph
 	if kg == nil {
@@ -186,7 +198,9 @@ func (kg *KG) QueryByObject(object string, caseSensitiveSearch bool) map[string]
 }
 
 // QueryByPredicate returns all subjects and objects connected by a given predicate.
-// It returns nil if the predicate is not found.
+// The result is an array of [subject, object] pairs, each represented as a 2-element string array.
+// The caseSensitiveSearch parameter determines if the predicate matching is case-sensitive.
+// It returns nil if the predicate is not found in any connection.
 func (kg *KG) QueryByPredicate(predicate string, caseSensitiveSearch bool) [][2]string {
 	// Check for nil graph
 	if kg == nil {
@@ -237,7 +251,10 @@ func (kg *KG) QueryByPredicate(predicate string, caseSensitiveSearch bool) [][2]
 }
 
 // FindTriples returns all triples in the knowledge graph that match the given pattern.
-// Any of the parameters can be empty, which means "match any value".
+// The result is an array of [subject, predicate, object] triples, each represented as a 3-element string array.
+// Any of the parameters (subject, predicate, object) can be empty, which means "match any value".
+// The caseSensitiveSearch parameter determines if string matching is case-sensitive.
+// It returns an empty array if no matching triples are found.
 func (kg *KG) FindTriples(subject, predicate, object string, caseSensitiveSearch bool) [][3]string {
 	// Check for nil graph
 	if kg == nil {

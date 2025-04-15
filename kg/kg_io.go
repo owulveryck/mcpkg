@@ -6,22 +6,25 @@ import (
 	"io"
 )
 
-// SerializablePredicate represents a serializable version of a Predicate
+// SerializablePredicate represents a serializable version of a Predicate.
+// It stores node references as IDs rather than pointers to enable serialization.
 type SerializablePredicate struct {
 	FromID  int64  // ID of the source node
 	ToID    int64  // ID of the target node
 	Subject string // Subject of the predicate
 }
 
-// SerializableKG is a serializable representation of the knowledge graph
+// SerializableKG is a serializable representation of the knowledge graph.
+// It converts the graph structure to a format that can be easily serialized.
 type SerializableKG struct {
-	Nodes     map[int64]*Node
-	Edges     []SerializablePredicate
-	CurrentID int64
+	Nodes     map[int64]*Node         // All nodes in the graph
+	Edges     []SerializablePredicate // All edges in a serializable format
+	CurrentID int64                   // The current ID counter for node creation
 }
 
 // SaveTo serializes and writes the knowledge graph to the provided writer
-// using gob encoding
+// using gob encoding. It converts the KG to a SerializableKG first to ensure
+// that the graph structure can be properly encoded.
 func SaveTo(w io.Writer, kg *KG) error {
 	encoder := gob.NewEncoder(w)
 
@@ -51,7 +54,8 @@ func SaveTo(w io.Writer, kg *KG) error {
 }
 
 // ReadFrom deserializes a knowledge graph from the provided reader
-// using gob encoding
+// using gob encoding. It reads a SerializableKG and converts it back
+// to a proper KG structure with all node and predicate relationships.
 func ReadFrom(r io.Reader) (*KG, error) {
 	decoder := gob.NewDecoder(r)
 
@@ -111,7 +115,8 @@ func ReadFrom(r io.Reader) (*KG, error) {
 }
 
 // SaveToJSON serializes and writes the knowledge graph to the provided writer
-// using JSON encoding
+// using JSON encoding. It converts the KG to a SerializableKG first to ensure
+// that the graph structure can be properly encoded in JSON format.
 func SaveToJSON(w io.Writer, kg *KG) error {
 	encoder := json.NewEncoder(w)
 
@@ -138,7 +143,8 @@ func SaveToJSON(w io.Writer, kg *KG) error {
 }
 
 // ReadFromJSON deserializes a knowledge graph from the provided reader
-// using JSON encoding
+// using JSON encoding. It reads a SerializableKG from JSON and converts it back
+// to a proper KG structure with all node and predicate relationships.
 func ReadFromJSON(r io.Reader) (*KG, error) {
 	decoder := json.NewDecoder(r)
 

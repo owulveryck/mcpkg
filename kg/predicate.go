@@ -4,7 +4,8 @@ import (
 	"gonum.org/v1/gonum/graph"
 )
 
-// Predicate is an edge of the graph. It fulfils the graph.Edge interface
+// Predicate is an edge of the graph. It fulfills the graph.Edge interface.
+// It represents a relationship between two nodes with a subject describing the relationship.
 type Predicate struct {
 	F, T    graph.Node
 	subject string
@@ -26,6 +27,8 @@ func (predicate *Predicate) To() graph.Node {
 // the receiver with nodes of the receiver swapped should
 // be returned, otherwise the receiver should be returned
 // unaltered.
+// ReversedEdge returns a new Predicate with the From and To nodes swapped.
+// This method satisfies the graph.Edge interface.
 func (predicate *Predicate) ReversedEdge() graph.Edge {
 	return &Predicate{
 		F: predicate.T,

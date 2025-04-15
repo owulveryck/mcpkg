@@ -14,6 +14,8 @@ type KG struct {
 	currentID int64
 }
 
+// NewKG creates and initializes a new empty knowledge graph.
+// It returns a pointer to the new KG with initialized maps for nodes, from, and to relationships.
 func NewKG() *KG {
 	return &KG{
 		nodes: make(map[int64]*Node),
@@ -34,6 +36,8 @@ type NodeList struct {
 	pos   int
 }
 
+// NewNodeList creates a new NodeList from the provided slice of nodes.
+// It initializes the position to -1, so Next() must be called before the first Node() access.
 func NewNodeList(nodes []*Node) *NodeList {
 	return &NodeList{
 		nodes: nodes,

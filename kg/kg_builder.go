@@ -2,8 +2,9 @@ package kg
 
 import "gonum.org/v1/gonum/graph"
 
-// NewNode returns a new Node with a unique
-// arbitrary ID.
+// NewNode returns a new Node with a unique arbitrary ID.
+// This method satisfies the graph.NodeAdder interface.
+// It increments the currentID counter to ensure unique IDs.
 func (kg *KG) NewNode() graph.Node {
 	n := &Node{
 		id: kg.currentID,
@@ -26,7 +27,8 @@ func (kg *KG) AddNode(n graph.Node) {
 	kg.nodes[n.ID()] = node
 }
 
-// NewEdge returns a new Edge from the source to the destination node.
+// NewEdge returns a new Edge (Predicate) from the source to the destination node.
+// This method satisfies the graph.EdgeAdder interface.
 func (kg *KG) NewEdge(from graph.Node, to graph.Node) graph.Edge {
 	return &Predicate{
 		F: from,
