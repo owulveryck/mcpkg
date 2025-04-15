@@ -1,4 +1,4 @@
-package main
+package kg
 
 import (
 	"gonum.org/v1/gonum/graph"
@@ -68,7 +68,7 @@ func (kg *KG) Nodes() graph.Nodes {
 	if len(kg.nodes) == 0 {
 		return NewNodeList(nil)
 	}
-	
+
 	nodes := make([]*Node, 0, len(kg.nodes))
 	for _, node := range kg.nodes {
 		nodes = append(nodes, node)
@@ -84,7 +84,7 @@ func (kg *KG) From(id int64) graph.Nodes {
 	if kg.from[id] == nil {
 		return NewNodeList(nil)
 	}
-	
+
 	nodes := make([]*Node, 0, len(kg.from[id]))
 	for nid := range kg.from[id] {
 		if node, ok := kg.nodes[nid]; ok {
@@ -103,14 +103,14 @@ func (kg *KG) HasEdgeBetween(xid int64, yid int64) bool {
 			return true
 		}
 	}
-	
+
 	// Check if there's an edge from yid to xid
 	if _, ok := kg.from[yid]; ok {
 		if _, ok := kg.from[yid][xid]; ok {
 			return true
 		}
 	}
-	
+
 	return false
 }
 
@@ -122,12 +122,12 @@ func (kg *KG) Edge(uid int64, vid int64) graph.Edge {
 	if _, ok := kg.from[uid]; !ok {
 		return nil
 	}
-	
+
 	pred, ok := kg.from[uid][vid]
 	if !ok {
 		return nil
 	}
-	
+
 	return pred
 }
 
@@ -137,7 +137,7 @@ func (kg *KG) HasEdgeFromTo(uid int64, vid int64) bool {
 	if _, ok := kg.from[uid]; !ok {
 		return false
 	}
-	
+
 	_, ok := kg.from[uid][vid]
 	return ok
 }
@@ -150,7 +150,7 @@ func (kg *KG) To(id int64) graph.Nodes {
 	if kg.to[id] == nil {
 		return NewNodeList(nil)
 	}
-	
+
 	nodes := make([]*Node, 0, len(kg.to[id]))
 	for nid := range kg.to[id] {
 		if node, ok := kg.nodes[nid]; ok {

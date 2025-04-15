@@ -1,4 +1,4 @@
-package main
+package kg
 
 import (
 	"sort"
@@ -59,7 +59,7 @@ func TestListPredicatesFromNode(t *testing.T) {
 	predicates := kg.ListPredicatesFromNode("Alice", true)
 	assert.NotNil(predicates, "Predicates should not be nil for existing node")
 	assert.Equal(3, len(predicates), "Alice should have 3 outgoing predicates")
-	
+
 	// Check the predicate subjects
 	subjects := make([]string, 0, len(predicates))
 	for _, pred := range predicates {
@@ -91,7 +91,7 @@ func TestListPredicatesToNode(t *testing.T) {
 	predicates := kg.ListPredicatesToNode("Book", true)
 	assert.NotNil(predicates, "Predicates should not be nil for existing node")
 	assert.Equal(2, len(predicates), "Book should have 2 incoming predicates")
-	
+
 	// Check the predicate subjects
 	subjects := make([]string, 0, len(predicates))
 	for _, pred := range predicates {
@@ -147,14 +147,14 @@ func TestQueryBySubject(t *testing.T) {
 	results := kg.QueryBySubject("Alice", true)
 	assert.NotNil(results, "Results should not be nil for existing subject")
 	assert.Equal(3, len(results), "Alice should have 3 different predicate types")
-	
+
 	// Check specific predicate-object pairs
 	assert.Contains(results, "knows", "Alice should have 'knows' predicate")
 	assert.Contains(results["knows"], "Bob", "Alice knows Bob")
-	
+
 	assert.Contains(results, "friendOf", "Alice should have 'friendOf' predicate")
 	assert.Contains(results["friendOf"], "Charlie", "Alice is a friend of Charlie")
-	
+
 	assert.Contains(results, "owns", "Alice should have 'owns' predicate")
 	assert.Contains(results["owns"], "Book", "Alice owns a Book")
 
@@ -181,11 +181,11 @@ func TestQueryByObject(t *testing.T) {
 	results := kg.QueryByObject("Book", true)
 	assert.NotNil(results, "Results should not be nil for existing object")
 	assert.Equal(2, len(results), "Book should have 2 different predicate types pointing to it")
-	
+
 	// Check specific predicate-subject pairs
 	assert.Contains(results, "owns", "Book should have 'owns' predicate")
 	assert.Contains(results["owns"], "Alice", "Alice owns the Book")
-	
+
 	assert.Contains(results, "likes", "Book should have 'likes' predicate")
 	assert.Contains(results["likes"], "Charlie", "Charlie likes the Book")
 
@@ -212,16 +212,16 @@ func TestQueryByPredicate(t *testing.T) {
 	results := kg.QueryByPredicate("owns", true)
 	assert.NotNil(results, "Results should not be nil for existing predicate")
 	assert.Equal(2, len(results), "There should be 2 'owns' relationships")
-	
+
 	// Find all subject-object pairs
 	pairs := make(map[string]string)
 	for _, pair := range results {
 		pairs[pair[0]] = pair[1]
 	}
-	
+
 	assert.Contains(pairs, "Alice", "Alice should be a subject of 'owns'")
 	assert.Equal("Book", pairs["Alice"], "Alice owns a Book")
-	
+
 	assert.Contains(pairs, "Bob", "Bob should be a subject of 'owns'")
 	assert.Equal("Car", pairs["Bob"], "Bob owns a Car")
 
@@ -252,29 +252,29 @@ func TestFindTriples(t *testing.T) {
 	// Test with only subject specified
 	aliceTriples := kg.FindTriples("Alice", "", "", true)
 	assert.Equal(3, len(aliceTriples), "Should find 3 triples with Alice as subject")
-	
+
 	// Test with only predicate specified
 	ownsTriples := kg.FindTriples("", "owns", "", true)
 	assert.Equal(2, len(ownsTriples), "Should find 2 triples with owns as predicate")
-	
+
 	// Test with only object specified
 	bookTriples := kg.FindTriples("", "", "Book", true)
 	assert.Equal(2, len(bookTriples), "Should find 2 triples with Book as object")
-	
+
 	// Test with subject and predicate specified
 	aliceOwnsTriples := kg.FindTriples("Alice", "owns", "", true)
 	assert.Equal(1, len(aliceOwnsTriples), "Should find 1 triple with Alice as subject and owns as predicate")
 	assert.Equal([3]string{"Alice", "owns", "Book"}, aliceOwnsTriples[0], "The triple should match Alice owns Book")
-	
+
 	// Test with non-matching criteria
 	nonMatchingTriples := kg.FindTriples("Alice", "knows", "Charlie", true)
 	assert.Empty(nonMatchingTriples, "Should find no triples with non-matching criteria")
-	
+
 	// Test with empty graph
 	emptyKG := NewKG()
 	emptyTriples := emptyKG.FindTriples("", "", "", true)
 	assert.Empty(emptyTriples, "Should find no triples in empty graph")
-	
+
 	// Test case-insensitive search
 	caseInsensitiveTriples := kg.FindTriples("alice", "knows", "bob", false)
 	assert.Equal(1, len(caseInsensitiveTriples), "Should find 1 triple with case-insensitive search")
@@ -285,14 +285,14 @@ func TestFindTriples(t *testing.T) {
 func TestQueryEdgeCases(t *testing.T) {
 	kg := createQueryTestGraph()
 	assert := assert.New(t)
-	
+
 	// Test with empty subject/object/predicate
 	emptySubject := kg.QueryBySubject("", true)
 	assert.Nil(emptySubject, "Empty subject should return nil")
-	
+
 	emptyObject := kg.QueryByObject("", true)
 	assert.Nil(emptyObject, "Empty object should return nil")
-	
+
 	// Test with nil graph
 	var nilKG *KG
 	assert.Nil(nilKG.ListPredicatesFromNode("Alice", true), "Nil graph should handle method calls safely")
@@ -303,3 +303,4 @@ func TestQueryEdgeCases(t *testing.T) {
 	assert.Nil(nilKG.QueryByPredicate("owns", true), "Nil graph should handle method calls safely")
 	assert.Nil(nilKG.FindTriples("Alice", "owns", "Book", true), "Nil graph should handle method calls safely")
 }
+

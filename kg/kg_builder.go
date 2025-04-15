@@ -1,4 +1,4 @@
-package main
+package kg
 
 import "gonum.org/v1/gonum/graph"
 
@@ -46,16 +46,16 @@ func (kg *KG) NewEdge(from graph.Node, to graph.Node) graph.Edge {
 func (kg *KG) SetEdge(e graph.Edge) {
 	from := e.From()
 	to := e.To()
-	
+
 	// Add nodes if they don't exist
 	if _, exists := kg.nodes[from.ID()]; !exists {
 		kg.AddNode(from)
 	}
-	
+
 	if _, exists := kg.nodes[to.ID()]; !exists {
 		kg.AddNode(to)
 	}
-	
+
 	// Create the predicate
 	pred, ok := e.(*Predicate)
 	if !ok {
@@ -64,7 +64,7 @@ func (kg *KG) SetEdge(e graph.Edge) {
 			T: to,
 		}
 	}
-	
+
 	// Initialize maps if they don't exist
 	if kg.from[from.ID()] == nil {
 		kg.from[from.ID()] = make(map[int64]*Predicate)
@@ -72,7 +72,7 @@ func (kg *KG) SetEdge(e graph.Edge) {
 	if kg.to[to.ID()] == nil {
 		kg.to[to.ID()] = make(map[int64]*Predicate)
 	}
-	
+
 	// Set the edge in both maps
 	kg.from[from.ID()][to.ID()] = pred
 	kg.to[to.ID()][from.ID()] = pred

@@ -1,4 +1,4 @@
-package main
+package kg
 
 type Node struct {
 	id      int64

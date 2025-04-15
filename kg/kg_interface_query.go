@@ -1,4 +1,4 @@
-package main
+package kg
 
 import "strings"
 
@@ -9,7 +9,7 @@ func (kg *KG) ListPredicatesFromNode(subject string, caseSensitiveSearch bool) [
 	if kg == nil {
 		return nil
 	}
-	
+
 	// Find the node
 	node := kg.FindNode(subject, caseSensitiveSearch)
 	if node == nil {
@@ -40,7 +40,7 @@ func (kg *KG) ListPredicatesToNode(subject string, caseSensitiveSearch bool) []*
 	if kg == nil {
 		return nil
 	}
-	
+
 	// Find the node
 	node := kg.FindNode(subject, caseSensitiveSearch)
 	if node == nil {
@@ -71,7 +71,7 @@ func (kg *KG) PredicatesFromTo(fromSubject, toSubject string, caseSensitiveSearc
 	if kg == nil {
 		return nil
 	}
-	
+
 	// Find the nodes
 	fromNode := kg.FindNode(fromSubject, caseSensitiveSearch)
 	if fromNode == nil {
@@ -106,7 +106,7 @@ func (kg *KG) QueryBySubject(subject string, caseSensitiveSearch bool) map[strin
 	if kg == nil {
 		return nil
 	}
-	
+
 	subjectNode := kg.FindNode(subject, caseSensitiveSearch)
 	if subjectNode == nil {
 		return nil
@@ -134,7 +134,7 @@ func (kg *KG) QueryBySubject(subject string, caseSensitiveSearch bool) map[strin
 		if result[pred.subject] == nil {
 			result[pred.subject] = make([]string, 0)
 		}
-		
+
 		// Add the object to the list
 		result[pred.subject] = append(result[pred.subject], toNode.Lexical)
 	}
@@ -149,7 +149,7 @@ func (kg *KG) QueryByObject(object string, caseSensitiveSearch bool) map[string]
 	if kg == nil {
 		return nil
 	}
-	
+
 	objectNode := kg.FindNode(object, caseSensitiveSearch)
 	if objectNode == nil {
 		return nil
@@ -177,7 +177,7 @@ func (kg *KG) QueryByObject(object string, caseSensitiveSearch bool) map[string]
 		if result[pred.subject] == nil {
 			result[pred.subject] = make([]string, 0)
 		}
-		
+
 		// Add the subject to the list
 		result[pred.subject] = append(result[pred.subject], fromNode.Lexical)
 	}
@@ -192,7 +192,7 @@ func (kg *KG) QueryByPredicate(predicate string, caseSensitiveSearch bool) [][2]
 	if kg == nil {
 		return nil
 	}
-	
+
 	var result [][2]string
 
 	// Check if there are any edges
@@ -220,7 +220,7 @@ func (kg *KG) QueryByPredicate(predicate string, caseSensitiveSearch bool) [][2]
 				foundPredicate = true
 				fromNode := pred.F.(*Node)
 				toNode := pred.T.(*Node)
-				
+
 				if fromNode != nil && toNode != nil && fromNode.Lexical != "" && toNode.Lexical != "" {
 					// Add the subject-object pair to the result
 					result = append(result, [2]string{fromNode.Lexical, toNode.Lexical})
@@ -243,7 +243,7 @@ func (kg *KG) FindTriples(subject, predicate, object string, caseSensitiveSearch
 	if kg == nil {
 		return nil
 	}
-	
+
 	var result [][3]string
 
 	// If no edges exist, return empty result
@@ -256,11 +256,11 @@ func (kg *KG) FindTriples(subject, predicate, object string, caseSensitiveSearch
 		if pattern == "" {
 			return true // Empty pattern matches any value
 		}
-		
+
 		if caseSensitiveSearch {
 			return value == pattern
 		}
-		
+
 		return strings.EqualFold(value, pattern)
 	}
 
@@ -273,15 +273,15 @@ func (kg *KG) FindTriples(subject, predicate, object string, caseSensitiveSearch
 
 			fromNode := pred.F.(*Node)
 			toNode := pred.T.(*Node)
-			
+
 			if fromNode == nil || toNode == nil || fromNode.Lexical == "" || toNode.Lexical == "" {
 				continue
 			}
-			
+
 			// Check if this triple matches the pattern
-			if matchesPattern(fromNode.Lexical, subject) && 
-			   matchesPattern(pred.subject, predicate) && 
-			   matchesPattern(toNode.Lexical, object) {
+			if matchesPattern(fromNode.Lexical, subject) &&
+				matchesPattern(pred.subject, predicate) &&
+				matchesPattern(toNode.Lexical, object) {
 				// Add the matching triple to the result
 				result = append(result, [3]string{fromNode.Lexical, pred.subject, toNode.Lexical})
 			}

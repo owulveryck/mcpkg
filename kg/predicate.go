@@ -1,9 +1,10 @@
-package main
+package kg
 
 import (
 	"gonum.org/v1/gonum/graph"
 )
 
+// Predicate is an edge of the graph. It fulfils the graph.Edge interface
 type Predicate struct {
 	F, T    graph.Node
 	subject string
