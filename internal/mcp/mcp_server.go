@@ -1,66 +1,40 @@
 package mcp
 
 import (
-	"context"
-	"errors"
-	"fmt"
-
-	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 )
 
-// NewMCPServer exposing the knowledge graph backend
+// NewMCPServer exposing the knowledge graph backend.
+// The server is stateless; it opens the knowledge graph file on each query.
+// Therefore, it does not implement the subscribe or listChanged resources capabilities (https://modelcontextprotocol.io/specification/2024-11-05/server/resources).
 func NewMCPServer() *server.MCPServer {
 	// Create a new MCP server
 	s := server.NewMCPServer(
 		"Knowledge Graph",
 		"1.0.0",
-		server.WithResourceCapabilities(true, true),
+		server.WithInstructions(`This is a Knowledge Graph service that allows you to store and retrieve information in the form of subject-predicate-object triples.
+
+You can use this service to:
+1. Insert new knowledge into the graph using the insert_triple tool
+2. Query relationships between entities using the graph:// URI format
+
+To insert information:
+- Use the insert_triple tool with a knowledge_graph_path, subject, predicate, and object
+- Example: When inserting "The sky is blue", use subject="sky", predicate="is", object="blue"
+
+To query information:
+- Use the graph://{knowledge_graph_path}?from={from_subject}&to={to_subject} URI format
+- This will return all relationships (predicates) between the from_subject and to_subject
+- Example: graph:///path/to/graph.kg?from=sky&to=blue will return ["is"]
+
+This knowledge graph persists your data across sessions in files specified by knowledge_graph_path.`),
+		server.WithResourceCapabilities(false, false),
 		server.WithLogging(),
 		server.WithRecovery(),
 	)
 
-	// Add a calculator tool
-	calculatorTool := mcp.NewTool("calculate",
-		mcp.WithDescription("Perform basic arithmetic operations"),
-		mcp.WithString("operation",
-			mcp.Required(),
-			mcp.Description("The operation to perform (add, subtract, multiply, divide)"),
-			mcp.Enum("add", "subtract", "multiply", "divide"),
-		),
-		mcp.WithNumber("x",
-			mcp.Required(),
-			mcp.Description("First number"),
-		),
-		mcp.WithNumber("y",
-			mcp.Required(),
-			mcp.Description("Second number"),
-		),
-	)
-
-	// Add the calculator handler
-	s.AddTool(calculatorTool, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-		op := request.Params.Arguments["operation"].(string)
-		x := request.Params.Arguments["x"].(float64)
-		y := request.Params.Arguments["y"].(float64)
-
-		var result float64
-		switch op {
-		case "add":
-			result = x + y
-		case "subtract":
-			result = x - y
-		case "multiply":
-			result = x * y
-		case "divide":
-			if y == 0 {
-				return nil, errors.New("Cannot divide by zero")
-			}
-			result = x / y
-		}
-
-		return mcp.NewToolResultText(fmt.Sprintf("%.2f", result)), nil
-	})
+	s.AddResourceTemplate(GetRelationFromTo(), GetRelationFromToHandler)
+	s.AddTool(InsertTriple(), InsertTripleHandler)
 
 	return s
 }

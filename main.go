@@ -3,39 +3,14 @@ package main
 import (
 	"fmt"
 
-	"github.com/owulveryck/mcpkg/internal/kg"
+	"github.com/mark3labs/mcp-go/server"
+	"github.com/owulveryck/mcpkg/internal/mcp"
 )
 
 func main() {
-	// Create a new knowledge graph
-	graph := kg.NewKG()
-
-	// Create nodes
-	node1 := graph.NewNode().(*kg.Node)
-	node1.Lexical = "Person"
-
-	node2 := graph.NewNode().(*kg.Node)
-	node2.Lexical = "City"
-
-	// Create an edge between nodes
-	edge := graph.NewEdge(node1, node2)
-	graph.SetEdge(edge)
-
-	// Print graph information
-	fmt.Println("Nodes:")
-	nodes := graph.Nodes()
-	nodes.Reset() // Make sure we start at the beginning
-	for nodes.Next() {
-		node := nodes.Node().(*kg.Node)
-		fmt.Printf("  Node ID: %d, Lexical: %s\n", node.ID(), node.Lexical)
+	s := mcp.NewMCPServer()
+	// Start the stdio server
+	if err := server.ServeStdio(s); err != nil {
+		fmt.Printf("Server error: %v\n", err)
 	}
-
-	// Check connectivity
-	fmt.Printf("\nEdge from %d to %d exists: %v\n",
-		node1.ID(), node2.ID(),
-		graph.HasEdgeFromTo(node1.ID(), node2.ID()))
-
-	fmt.Printf("Edge between %d and %d exists: %v\n",
-		node1.ID(), node2.ID(),
-		graph.HasEdgeBetween(node1.ID(), node2.ID()))
 }

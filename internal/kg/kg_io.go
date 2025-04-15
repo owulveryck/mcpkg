@@ -22,10 +22,10 @@ type SerializableKG struct {
 	CurrentID int64                   // The current ID counter for node creation
 }
 
-// SaveTo serializes and writes the knowledge graph to the provided writer
+// WriteTo serializes and writes the knowledge graph to the provided writer
 // using gob encoding. It converts the KG to a SerializableKG first to ensure
 // that the graph structure can be properly encoded.
-func SaveTo(w io.Writer, kg *KG) error {
+func WriteTo(w io.Writer, kg *KG) error {
 	encoder := gob.NewEncoder(w)
 
 	// Register the Node type with gob

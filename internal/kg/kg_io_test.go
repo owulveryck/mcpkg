@@ -171,7 +171,7 @@ func TestGobSerialization(t *testing.T) {
 
 	// Serialize the graph to a buffer
 	var buf bytes.Buffer
-	err := SaveTo(&buf, originalGraph)
+	err := WriteTo(&buf, originalGraph)
 	if err != nil {
 		t.Fatalf("Failed to serialize graph: %v", err)
 	}
@@ -243,7 +243,7 @@ func TestRoundTripComparison(t *testing.T) {
 
 	// Test round-trip with GOB
 	var gobBuf bytes.Buffer
-	err := SaveTo(&gobBuf, originalGraph)
+	err := WriteTo(&gobBuf, originalGraph)
 	if err != nil {
 		t.Fatalf("Failed to serialize graph with GOB: %v", err)
 	}
@@ -504,4 +504,3 @@ func TestErrorCases(t *testing.T) {
 	_, err = ReadFromJSON(invalidJSONData)
 	assert.Error(t, err, "ReadFromJSON should return an error with invalid data")
 }
-
