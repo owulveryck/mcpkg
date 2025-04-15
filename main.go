@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/owulveryck/mcpkg/kg"
+	"github.com/owulveryck/mcpkg/internal/kg"
 )
 
 func main() {
