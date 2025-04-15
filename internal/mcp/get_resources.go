@@ -17,7 +17,7 @@ import (
 func GetRelationFromTo() mcp.ResourceTemplate {
 	return mcp.NewResourceTemplate(
 		"graph://{knowledge_graph_path}?from={from_subject}&to={to_subject}",
-		"Relations between two nodes in the graph reference in knowledge_graph_path",
+		"get_predicate_from_to",
 		mcp.WithTemplateDescription("Returns all the relations between two elements of the graph."),
 		mcp.WithTemplateMIMEType("application/json"),
 	)
