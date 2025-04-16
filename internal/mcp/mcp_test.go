@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"testing"
 
 	"github.com/mark3labs/mcp-go/client"
@@ -56,9 +57,34 @@ func TestServer(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Initialize failed: %v", err)
 	}
+	// Create a temporary directory.
+	tempDir, err := os.MkdirTemp("", "mcp-test")
+	if err != nil {
+		t.Fatalf("failed to create temporary directory: %v", err)
+	}
+	defer os.RemoveAll(tempDir) // Clean up after the test.
+	kgfile := filepath.Join(tempDir, "testkg.kg")
+
+	callToolRequest := mcp.CallToolRequest{}
+	callToolRequest.Params.Name = "insert_triple"
+	callToolRequest.Params.Arguments = map[string]interface{}{
+		"knowledge_graph_path": kgfile,
+		"subject":              "the sky",
+		"predicate":            "is",
+		"object":               "blue",
+	}
+
+	callToolResult, err := client.CallTool(ctx, callToolRequest)
+	if err != nil {
+		t.Errorf("CallTool failed: %v", err)
+	}
+
+	if len(callToolResult.Content) != 1 {
+		t.Errorf("Expected 1 content item, got %d", len(callToolResult.Content))
+	}
 
 	readRequest := mcp.ReadResourceRequest{}
-	readRequest.Params.URI = "graph://resource"
+	readRequest.Params.URI = "graph://" + kgfile + "?from=the sky&to=blue"
 
 	resultRequest, err := client.ReadResource(ctx, readRequest)
 	if err != nil {
