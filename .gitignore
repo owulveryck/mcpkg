@@ -1,2 +1,3 @@
 mcpkg
 .envrc
+internal/mcp/testdata/server

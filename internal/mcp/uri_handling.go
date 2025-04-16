@@ -8,7 +8,7 @@ func extractGraphPathFromURI(uri string) string {
 	if err != nil {
 		return ""
 	}
-	return u.Host
+	return u.Host + u.Path
 }
 
 // extractFromFromURI extracts the {from_subject} parameter from an URI of type graph://{knowledge_graph_path}?from={from_subject}&to={to_subject}.
