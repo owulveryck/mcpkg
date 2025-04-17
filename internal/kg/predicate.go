@@ -8,7 +8,7 @@ import (
 // It represents a relationship between two nodes with a subject describing the relationship.
 type Predicate struct {
 	F, T    graph.Node
-	subject string
+	Subject string
 }
 
 // From returns the from node of the edge.

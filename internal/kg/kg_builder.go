@@ -7,7 +7,7 @@ import "gonum.org/v1/gonum/graph"
 // It increments the currentID counter to ensure unique IDs.
 func (kg *KG) NewNode() graph.Node {
 	n := &Node{
-		id: kg.currentID,
+		Identifier: kg.currentID,
 	}
 	kg.nodes[kg.currentID] = n
 	kg.currentID++
@@ -22,7 +22,7 @@ func (kg *KG) AddNode(n graph.Node) {
 	}
 	node, ok := n.(*Node)
 	if !ok {
-		node = &Node{id: n.ID()}
+		node = &Node{Identifier: n.ID()}
 	}
 	kg.nodes[n.ID()] = node
 }

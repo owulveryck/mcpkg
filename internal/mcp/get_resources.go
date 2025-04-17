@@ -45,7 +45,10 @@ func GetRelationFromToHandler(ctx context.Context, request mcp.ReadResourceReque
 
 	result := make([]mcp.ResourceContents, len(predicates))
 	for i, predicate := range predicates {
-		result[i], _ = mcp.AsTextResourceContents(predicate)
+		result[i] = mcp.TextResourceContents{
+			URI:  request.Params.URI,
+			Text: predicate.Subject,
+		}
 	}
 	return result, nil
 }

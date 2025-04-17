@@ -3,6 +3,7 @@ package mcp
 import (
 	"context"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/mark3labs/mcp-go/mcp"
@@ -11,7 +12,13 @@ import (
 func TestHandlerDirectly(t *testing.T) {
 	// Create test context
 	ctx := context.Background()
-	kgPath := "/tmp/mytest.kg"
+	tempDir, err := os.MkdirTemp("", "mcp-test")
+	if err != nil {
+		t.Fatalf("failed to create temporary directory: %v", err)
+	}
+	defer os.RemoveAll(tempDir) // Clean up after the test.
+	kgPath := filepath.Join(tempDir, "testkg.kg")
+
 	defer os.Remove(kgPath)
 
 	// First test InsertTripleHandler

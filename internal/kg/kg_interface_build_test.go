@@ -26,7 +26,15 @@ func TestInsertTriple(t *testing.T) {
 	// Check that the predicate was created
 	predicate := kg.FindPredicate("predicate1", true)
 	assert.NotNil(predicate, "Predicate should exist")
-	assert.Equal("predicate1", predicate.subject, "Predicate should have correct subject")
+	assert.Equal("predicate1", predicate.Subject, "Predicate should have correct subject")
+
+	// Check that the predicate connects the subject and object correctly
+	assert.Equal(subject.ID(), predicate.From().ID(), "Predicate From() should match subject node ID")
+	assert.Equal(object.ID(), predicate.To().ID(), "Predicate To() should match object node ID")
+
+	// Verify the predicate is properly connected to subject and object
+	assert.Same(subject, predicate.From(), "Predicate From() should be the same object as subject")
+	assert.Same(object, predicate.To(), "Predicate To() should be the same object as object")
 
 	// Insert a triple with existing nodes
 	err = kg.InsertTriple("subject1", "predicate2", "object2", true)
@@ -37,6 +45,12 @@ func TestInsertTriple(t *testing.T) {
 	assert.NotNil(object2, "New object node should exist")
 	assert.Equal("object2", object2.Lexical, "New object node should have correct lexical value")
 
+	// Check the new predicate connects to the existing subject
+	predicate2 := kg.FindPredicate("predicate2", true)
+	assert.NotNil(predicate2, "Second predicate should exist")
+	assert.Equal(subject.ID(), predicate2.From().ID(), "Second predicate should connect to existing subject")
+	assert.Equal(object2.ID(), predicate2.To().ID(), "Second predicate should connect to new object")
+
 	// Test case-insensitive search (with different case)
 	err = kg.InsertTriple("SUBJECT3", "PREDICATE3", "OBJECT3", false)
 	assert.NoError(err, "InsertTriple should not return an error")
@@ -45,6 +59,14 @@ func TestInsertTriple(t *testing.T) {
 	subject3 := kg.FindNode("subject3", false)
 	assert.NotNil(subject3, "Subject node should be found case-insensitive")
 	assert.Equal("SUBJECT3", subject3.Lexical, "Original case should be preserved")
+
+	// Validate the case-insensitive predicate connection
+	predicate3 := kg.FindPredicate("predicate3", false)
+	assert.NotNil(predicate3, "Case-insensitive predicate should exist")
+	object3 := kg.FindNode("object3", false)
+	assert.NotNil(object3, "Case-insensitive object should exist")
+	assert.Equal(subject3.ID(), predicate3.From().ID(), "Predicate should connect to correct subject")
+	assert.Equal(object3.ID(), predicate3.To().ID(), "Predicate should connect to correct object")
 }
 
 func TestFindNode(t *testing.T) {
@@ -93,17 +115,17 @@ func TestFindPredicate(t *testing.T) {
 
 	// Create a predicate
 	pred1 := kg.NewEdge(node1, node2).(*Predicate)
-	pred1.subject = "Test Predicate"
+	pred1.Subject = "Test Predicate"
 	kg.SetEdge(pred1)
 
 	pred2 := kg.NewEdge(node2, node1).(*Predicate)
-	pred2.subject = "test predicate" // Different case
+	pred2.Subject = "test predicate" // Different case
 	kg.SetEdge(pred2)
 
 	// Test case-sensitive search
 	foundPred := kg.FindPredicate("Test Predicate", true)
 	assert.NotNil(foundPred, "Predicate should be found with case-sensitive search")
-	assert.Equal("Test Predicate", foundPred.subject, "Found predicate should have correct subject")
+	assert.Equal("Test Predicate", foundPred.Subject, "Found predicate should have correct subject")
 
 	// Test case-insensitive search
 	foundPred = kg.FindPredicate("test predicate", false)
@@ -135,15 +157,15 @@ func TestListAllPredicates(t *testing.T) {
 
 	// Create predicates
 	pred1 := kg.NewEdge(node1, node2).(*Predicate)
-	pred1.subject = "Predicate 1"
+	pred1.Subject = "Predicate 1"
 	kg.SetEdge(pred1)
 
 	pred2 := kg.NewEdge(node2, node3).(*Predicate)
-	pred2.subject = "Predicate 2"
+	pred2.Subject = "Predicate 2"
 	kg.SetEdge(pred2)
 
 	pred3 := kg.NewEdge(node1, node3).(*Predicate)
-	pred3.subject = "Predicate 1" // Duplicate to test deduplication
+	pred3.Subject = "Predicate 1" // Duplicate to test deduplication
 	kg.SetEdge(pred3)
 
 	// Test listing predicates
@@ -188,4 +210,3 @@ func TestListNodes(t *testing.T) {
 	nodes = emptyKG.ListNodes()
 	assert.Empty(nodes, "Empty graph should return empty node list")
 }
-

@@ -29,23 +29,23 @@ func createQueryTestGraph() *KG {
 
 	// Create relationships
 	knows := kg.NewEdge(person1, person2).(*Predicate)
-	knows.subject = "knows"
+	knows.Subject = "knows"
 	kg.SetEdge(knows)
 
 	friendOf := kg.NewEdge(person1, person3).(*Predicate)
-	friendOf.subject = "friendOf"
+	friendOf.Subject = "friendOf"
 	kg.SetEdge(friendOf)
 
 	owns1 := kg.NewEdge(person1, item1).(*Predicate)
-	owns1.subject = "owns"
+	owns1.Subject = "owns"
 	kg.SetEdge(owns1)
 
 	owns2 := kg.NewEdge(person2, item2).(*Predicate)
-	owns2.subject = "owns"
+	owns2.Subject = "owns"
 	kg.SetEdge(owns2)
 
 	likes := kg.NewEdge(person3, item1).(*Predicate)
-	likes.subject = "likes"
+	likes.Subject = "likes"
 	kg.SetEdge(likes)
 
 	return kg
@@ -63,7 +63,7 @@ func TestListPredicatesFromNode(t *testing.T) {
 	// Check the predicate subjects
 	subjects := make([]string, 0, len(predicates))
 	for _, pred := range predicates {
-		subjects = append(subjects, pred.subject)
+		subjects = append(subjects, pred.Subject)
 	}
 	sort.Strings(subjects)
 	assert.Equal([]string{"friendOf", "knows", "owns"}, subjects, "Predicate subjects should match")
@@ -95,7 +95,7 @@ func TestListPredicatesToNode(t *testing.T) {
 	// Check the predicate subjects
 	subjects := make([]string, 0, len(predicates))
 	for _, pred := range predicates {
-		subjects = append(subjects, pred.subject)
+		subjects = append(subjects, pred.Subject)
 	}
 	sort.Strings(subjects)
 	assert.Equal([]string{"likes", "owns"}, subjects, "Predicate subjects should match")
@@ -123,7 +123,7 @@ func TestPredicatesFromTo(t *testing.T) {
 	predicates := kg.PredicatesFromTo("Alice", "Bob", true)
 	assert.NotNil(predicates, "Predicates should not be nil for existing connection")
 	assert.Equal(1, len(predicates), "Should find 1 predicate from Alice to Bob")
-	assert.Equal("knows", predicates[0].subject, "Predicate subject should be 'knows'")
+	assert.Equal("knows", predicates[0].Subject, "Predicate subject should be 'knows'")
 
 	// Test for non-existing connection
 	nilPredicates := kg.PredicatesFromTo("Bob", "Alice", true)
@@ -303,4 +303,3 @@ func TestQueryEdgeCases(t *testing.T) {
 	assert.Nil(nilKG.QueryByPredicate("owns", true), "Nil graph should handle method calls safely")
 	assert.Nil(nilKG.FindTriples("Alice", "owns", "Book", true), "Nil graph should handle method calls safely")
 }
-

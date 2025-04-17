@@ -24,15 +24,15 @@ func createTestGraph() *KG {
 
 	// Create edges
 	pred1 := kg.NewEdge(node1, node2).(*Predicate)
-	pred1.subject = "connects to"
+	pred1.Subject = "connects to"
 	kg.SetEdge(pred1)
 
 	pred2 := kg.NewEdge(node2, node3).(*Predicate)
-	pred2.subject = "relates to"
+	pred2.Subject = "relates to"
 	kg.SetEdge(pred2)
 
 	pred3 := kg.NewEdge(node1, node3).(*Predicate)
-	pred3.subject = "references"
+	pred3.Subject = "references"
 	kg.SetEdge(pred3)
 
 	return kg
@@ -267,7 +267,7 @@ func TestAddNode(t *testing.T) {
 	assert := assert.New(t)
 
 	// Create a custom node
-	customNode := &Node{id: 42, Lexical: "Custom Node"}
+	customNode := &Node{Identifier: 42, Lexical: "Custom Node"}
 
 	// Add the node to the graph
 	kg.AddNode(customNode)
@@ -410,8 +410,8 @@ func TestSetEdge(t *testing.T) {
 	assert := assert.New(t)
 
 	// Create nodes
-	node1 := &Node{id: 10, Lexical: "Node 10"}
-	node2 := &Node{id: 20, Lexical: "Node 20"}
+	node1 := &Node{Identifier: 10, Lexical: "Node 10"}
+	node2 := &Node{Identifier: 20, Lexical: "Node 20"}
 
 	// Test with existing nodes in the graph
 	kg.AddNode(node1)
@@ -421,7 +421,7 @@ func TestSetEdge(t *testing.T) {
 	pred := &Predicate{
 		F:       node1,
 		T:       node2,
-		subject: "test subject",
+		Subject: "test subject",
 	}
 
 	// Set the edge
@@ -441,13 +441,13 @@ func TestSetEdge(t *testing.T) {
 	assert.Equal(int64(20), retrievedEdge.To().ID(), "Edge To should be node 20")
 
 	// Test adding edge with nodes not in the graph
-	node3 := &Node{id: 30, Lexical: "Node 30"}
-	node4 := &Node{id: 40, Lexical: "Node 40"}
+	node3 := &Node{Identifier: 30, Lexical: "Node 30"}
+	node4 := &Node{Identifier: 40, Lexical: "Node 40"}
 
 	pred2 := &Predicate{
 		F:       node3,
 		T:       node4,
-		subject: "auto-added nodes",
+		Subject: "auto-added nodes",
 	}
 
 	// Set the edge with nodes not in the graph (should auto-add them)
@@ -503,4 +503,75 @@ func TestErrorCases(t *testing.T) {
 	invalidJSONData := bytes.NewBufferString("This is not valid JSON data")
 	_, err = ReadFromJSON(invalidJSONData)
 	assert.Error(t, err, "ReadFromJSON should return an error with invalid data")
+}
+
+func TestNodeIDPreservation(t *testing.T) {
+	assert := assert.New(t)
+
+	// Create a graph with nodes that have specific IDs
+	kg := NewKG()
+
+	// Manually create nodes with specific IDs and add them to the graph
+	node1 := &Node{Identifier: 100, Lexical: "Node 100"}
+	node2 := &Node{Identifier: 200, Lexical: "Node 200"}
+	node3 := &Node{Identifier: 300, Lexical: "Node 300"}
+
+	kg.AddNode(node1)
+	kg.AddNode(node2)
+	kg.AddNode(node3)
+
+	// Create edges between them
+	pred1 := kg.NewEdge(node1, node2).(*Predicate)
+	pred1.Subject = "connects to"
+	kg.SetEdge(pred1)
+
+	pred2 := kg.NewEdge(node2, node3).(*Predicate)
+	pred2.Subject = "relates to"
+	kg.SetEdge(pred2)
+
+	// Test GOB serialization
+	var gobBuf bytes.Buffer
+	err := WriteTo(&gobBuf, kg)
+	assert.NoError(err, "Should serialize graph without error")
+
+	// Deserialize with GOB
+	deserializedGob, err := ReadFrom(&gobBuf)
+	assert.NoError(err, "Should deserialize graph without error")
+
+	// Verify node IDs are preserved
+	for _, id := range []int64{100, 200, 300} {
+		originalNode := kg.Node(id).(*Node)
+		deserializedNode := deserializedGob.Node(id).(*Node)
+
+		assert.NotNil(deserializedNode, "Node with ID %d should exist after deserialization", id)
+		assert.Equal(originalNode.ID(), deserializedNode.ID(), "Node ID should be preserved")
+		assert.Equal(originalNode.Lexical, deserializedNode.Lexical, "Node Lexical value should be preserved")
+	}
+
+	// Verify edges are preserved with correct node IDs
+	assert.True(deserializedGob.HasEdgeFromTo(100, 200), "Edge from 100 to 200 should be preserved")
+	assert.True(deserializedGob.HasEdgeFromTo(200, 300), "Edge from 200 to 300 should be preserved")
+
+	// Test JSON serialization
+	var jsonBuf bytes.Buffer
+	err = SaveToJSON(&jsonBuf, kg)
+	assert.NoError(err, "Should serialize graph to JSON without error")
+
+	// Deserialize with JSON
+	deserializedJSON, err := ReadFromJSON(&jsonBuf)
+	assert.NoError(err, "Should deserialize graph from JSON without error")
+
+	// Verify node IDs are preserved in JSON
+	for _, id := range []int64{100, 200, 300} {
+		originalNode := kg.Node(id).(*Node)
+		deserializedNode := deserializedJSON.Node(id).(*Node)
+
+		assert.NotNil(deserializedNode, "Node with ID %d should exist after JSON deserialization", id)
+		assert.Equal(originalNode.ID(), deserializedNode.ID(), "Node ID should be preserved in JSON")
+		assert.Equal(originalNode.Lexical, deserializedNode.Lexical, "Node Lexical value should be preserved in JSON")
+	}
+
+	// Verify edges are preserved with correct node IDs in JSON
+	assert.True(deserializedJSON.HasEdgeFromTo(100, 200), "Edge from 100 to 200 should be preserved in JSON")
+	assert.True(deserializedJSON.HasEdgeFromTo(200, 300), "Edge from 200 to 300 should be preserved in JSON")
 }

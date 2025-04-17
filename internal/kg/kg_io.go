@@ -44,7 +44,7 @@ func WriteTo(w io.Writer, kg *KG) error {
 			serialKG.Edges = append(serialKG.Edges, SerializablePredicate{
 				FromID:  fromID,
 				ToID:    toID,
-				Subject: pred.subject,
+				Subject: pred.Subject,
 			})
 		}
 	}
@@ -95,7 +95,7 @@ func ReadFrom(r io.Reader) (*KG, error) {
 		pred := &Predicate{
 			F:       fromNode,
 			T:       toNode,
-			subject: edge.Subject,
+			Subject: edge.Subject,
 		}
 
 		// Initialize maps if needed
@@ -133,7 +133,7 @@ func SaveToJSON(w io.Writer, kg *KG) error {
 			serialKG.Edges = append(serialKG.Edges, SerializablePredicate{
 				FromID:  fromID,
 				ToID:    toID,
-				Subject: pred.subject,
+				Subject: pred.Subject,
 			})
 		}
 	}
@@ -181,7 +181,7 @@ func ReadFromJSON(r io.Reader) (*KG, error) {
 		pred := &Predicate{
 			F:       fromNode,
 			T:       toNode,
-			subject: edge.Subject,
+			Subject: edge.Subject,
 		}
 
 		// Initialize maps if needed

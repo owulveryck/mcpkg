@@ -68,7 +68,7 @@ func (kg *KG) ListPredicatesToNode(subject string, caseSensitiveSearch bool) []*
 	return predicates
 }
 
-// PredicatesFromTo returns all the predicates that link the node identified by fromSubject 
+// PredicatesFromTo returns all the predicates that link the node identified by fromSubject
 // to the node identified by toSubject.
 // The caseSensitiveSearch parameter determines if the node lookup is case-sensitive.
 // Returns nil if no link is found or if fromSubject or toSubject do not exist.
@@ -130,7 +130,7 @@ func (kg *KG) QueryBySubject(subject string, caseSensitiveSearch bool) map[strin
 
 	// Process all outgoing edges
 	for _, pred := range fromEdges {
-		if pred == nil || pred.subject == "" {
+		if pred == nil || pred.Subject == "" {
 			continue
 		}
 
@@ -140,12 +140,12 @@ func (kg *KG) QueryBySubject(subject string, caseSensitiveSearch bool) map[strin
 		}
 
 		// Initialize the slice if needed
-		if result[pred.subject] == nil {
-			result[pred.subject] = make([]string, 0)
+		if result[pred.Subject] == nil {
+			result[pred.Subject] = make([]string, 0)
 		}
 
 		// Add the object to the list
-		result[pred.subject] = append(result[pred.subject], toNode.Lexical)
+		result[pred.Subject] = append(result[pred.Subject], toNode.Lexical)
 	}
 
 	return result
@@ -176,7 +176,7 @@ func (kg *KG) QueryByObject(object string, caseSensitiveSearch bool) map[string]
 
 	// Process all incoming edges
 	for _, pred := range toEdges {
-		if pred == nil || pred.subject == "" {
+		if pred == nil || pred.Subject == "" {
 			continue
 		}
 
@@ -186,12 +186,12 @@ func (kg *KG) QueryByObject(object string, caseSensitiveSearch bool) map[string]
 		}
 
 		// Initialize the slice if needed
-		if result[pred.subject] == nil {
-			result[pred.subject] = make([]string, 0)
+		if result[pred.Subject] == nil {
+			result[pred.Subject] = make([]string, 0)
 		}
 
 		// Add the subject to the list
-		result[pred.subject] = append(result[pred.subject], fromNode.Lexical)
+		result[pred.Subject] = append(result[pred.Subject], fromNode.Lexical)
 	}
 
 	return result
@@ -218,16 +218,16 @@ func (kg *KG) QueryByPredicate(predicate string, caseSensitiveSearch bool) [][2]
 	// Iterate through all edges
 	for _, toMap := range kg.from {
 		for _, pred := range toMap {
-			if pred == nil || pred.subject == "" {
+			if pred == nil || pred.Subject == "" {
 				continue
 			}
 
 			// Check if this is the predicate we're looking for
 			matches := false
 			if caseSensitiveSearch {
-				matches = pred.subject == predicate
+				matches = pred.Subject == predicate
 			} else {
-				matches = strings.EqualFold(pred.subject, predicate)
+				matches = strings.EqualFold(pred.Subject, predicate)
 			}
 
 			if matches {
@@ -284,7 +284,7 @@ func (kg *KG) FindTriples(subject, predicate, object string, caseSensitiveSearch
 	// Iterate through all edges
 	for _, toMap := range kg.from {
 		for _, pred := range toMap {
-			if pred == nil || pred.subject == "" {
+			if pred == nil || pred.Subject == "" {
 				continue
 			}
 
@@ -297,10 +297,10 @@ func (kg *KG) FindTriples(subject, predicate, object string, caseSensitiveSearch
 
 			// Check if this triple matches the pattern
 			if matchesPattern(fromNode.Lexical, subject) &&
-				matchesPattern(pred.subject, predicate) &&
+				matchesPattern(pred.Subject, predicate) &&
 				matchesPattern(toNode.Lexical, object) {
 				// Add the matching triple to the result
-				result = append(result, [3]string{fromNode.Lexical, pred.subject, toNode.Lexical})
+				result = append(result, [3]string{fromNode.Lexical, pred.Subject, toNode.Lexical})
 			}
 		}
 	}

@@ -32,7 +32,7 @@ func (kg *KG) InsertTriple(subject, predicate, object string, caseSensitiveSearc
 	pred := &Predicate{
 		F:       subjectNode,
 		T:       objectNode,
-		subject: predicate,
+		Subject: predicate,
 	}
 
 	// Add the edge to the graph
@@ -80,16 +80,16 @@ func (kg *KG) FindPredicate(subject string, caseSensitiveSearch bool) *Predicate
 
 	for _, toMap := range kg.from {
 		for _, pred := range toMap {
-			if pred == nil || pred.subject == "" {
+			if pred == nil || pred.Subject == "" {
 				continue
 			}
 
 			if caseSensitiveSearch {
-				if pred.subject == subject {
+				if pred.Subject == subject {
 					return pred
 				}
 			} else {
-				if strings.EqualFold(pred.subject, subject) {
+				if strings.EqualFold(pred.Subject, subject) {
 					return pred
 				}
 			}
@@ -110,8 +110,8 @@ func (kg *KG) ListAllPredicates() []string {
 
 	for _, toMap := range kg.from {
 		for _, pred := range toMap {
-			if pred != nil && pred.subject != "" {
-				predicates[pred.subject] = struct{}{}
+			if pred != nil && pred.Subject != "" {
+				predicates[pred.Subject] = struct{}{}
 			}
 		}
 	}
