@@ -3,9 +3,11 @@ package mcp_test
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/mark3labs/mcp-go/client"
@@ -65,13 +67,15 @@ func TestServer(t *testing.T) {
 	defer os.RemoveAll(tempDir) // Clean up after the test.
 	kgfile := filepath.Join(tempDir, "testkg.kg")
 
+	subject := "the sky"
+	object := "blue"
 	callToolRequest := mcp.CallToolRequest{}
 	callToolRequest.Params.Name = "insert_triple"
 	callToolRequest.Params.Arguments = map[string]interface{}{
 		"knowledge_graph_path": kgfile,
-		"subject":              "the sky",
+		"subject":              subject,
 		"predicate":            "is",
-		"object":               "blue",
+		"object":               object,
 	}
 
 	callToolResult, err := client.CallTool(ctx, callToolRequest)
@@ -84,7 +88,19 @@ func TestServer(t *testing.T) {
 	}
 
 	readRequest := mcp.ReadResourceRequest{}
-	readRequest.Params.URI = "graph://" + kgfile + "?from=the sky&to=blue"
+	template := "graph://%s?from=%s&to=%s" // Pre-encoded template
+
+	// URI-encode the parameters
+	encodedPath := url.QueryEscape(kgfile)
+	encodedFrom := url.QueryEscape(subject)
+	encodedTo := url.QueryEscape(object)
+	// Replace plus signs with %20
+	encodedFrom = strings.ReplaceAll(encodedFrom, "+", "%20")
+	encodedTo = strings.ReplaceAll(encodedTo, "+", "%20")
+
+	// Substitute the values into the template
+	uri := fmt.Sprintf(template, encodedPath, encodedFrom, encodedTo)
+	readRequest.Params.URI = uri
 
 	resultRequest, err := client.ReadResource(ctx, readRequest)
 	if err != nil {
@@ -95,3 +111,4 @@ func TestServer(t *testing.T) {
 		t.Fatalf("Expected 1 content item, got %d", len(resultRequest.Contents))
 	}
 }
+

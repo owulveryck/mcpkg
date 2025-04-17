@@ -26,9 +26,10 @@ func GetRelationFromTo() mcp.ResourceTemplate {
 // It extracts the graph path, "from" subject, and "to" subject from the request URI,
 // reads the graph from the specified file, and returns the predicates (relations) between the two nodes.
 func GetRelationFromToHandler(ctx context.Context, request mcp.ReadResourceRequest) ([]mcp.ResourceContents, error) {
-	graphPath := extractGraphPathFromURI(request.Params.URI)
-	from := extractFromFromURI(request.Params.URI)
-	to := extractToFromURI(request.Params.URI)
+	arguments := request.Params.Arguments
+	graphPath := arguments["knowledge_graph_path"].([]string)[0]
+	from := arguments["from_subject"].([]string)[0]
+	to := arguments["to_subject"].([]string)[0]
 
 	f, err := os.Open(graphPath)
 	if err != nil {
@@ -39,6 +40,7 @@ func GetRelationFromToHandler(ctx context.Context, request mcp.ReadResourceReque
 	if err != nil {
 		return nil, err
 	}
+
 	predicates := graph.PredicatesFromTo(from, to, false)
 
 	result := make([]mcp.ResourceContents, len(predicates))

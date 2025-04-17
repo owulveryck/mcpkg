@@ -74,6 +74,6 @@ func InsertTripleHandler(ctx context.Context, request mcp.CallToolRequest) (*mcp
 				Text: "success",
 			},
 		},
-		IsError: true,
+		IsError: false,
 	}, nil
 }

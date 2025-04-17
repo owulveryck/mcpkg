@@ -1,6 +1,8 @@
 package mcp
 
 import (
+	"log"
+
 	"github.com/mark3labs/mcp-go/server"
 )
 
@@ -8,6 +10,7 @@ import (
 // The server is stateless; it opens the knowledge graph file on each query.
 // Therefore, it does not implement the subscribe or listChanged resources capabilities (https://modelcontextprotocol.io/specification/2024-11-05/server/resources).
 func NewMCPServer() *server.MCPServer {
+	log.Println("HELLO")
 	// Create a new MCP server
 	s := server.NewMCPServer(
 		"Knowledge Graph",
