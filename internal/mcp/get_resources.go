@@ -2,10 +2,9 @@ package mcp
 
 import (
 	"context"
-	"os"
+	"net/url"
 
 	"github.com/mark3labs/mcp-go/mcp"
-	"github.com/owulveryck/mcpkg/internal/kg"
 )
 
 // GetRelationFromTo returns a ResourceTemplate for retrieving relations between two nodes in a graph.
@@ -27,16 +26,15 @@ func GetRelationFromTo() mcp.ResourceTemplate {
 // reads the graph from the specified file, and returns the predicates (relations) between the two nodes.
 func GetRelationFromToHandler(ctx context.Context, request mcp.ReadResourceRequest) ([]mcp.ResourceContents, error) {
 	arguments := request.Params.Arguments
-	graphPath := arguments["knowledge_graph_path"].([]string)[0]
-	from := arguments["from_subject"].([]string)[0]
-	to := arguments["to_subject"].([]string)[0]
-
-	f, err := os.Open(graphPath)
+	graphPath, err := url.PathUnescape(arguments["knowledge_graph_path"].([]string)[0])
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
-	graph, err := kg.ReadFrom(f)
+	from := arguments["from_subject"].([]string)[0]
+	to := arguments["to_subject"].([]string)[0]
+
+	// Read the graph using the thread-safe method
+	graph, err := ReadKnowledgeGraph(graphPath)
 	if err != nil {
 		return nil, err
 	}

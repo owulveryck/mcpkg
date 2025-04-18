@@ -26,6 +26,10 @@ type SerializableKG struct {
 // using gob encoding. It converts the KG to a SerializableKG first to ensure
 // that the graph structure can be properly encoded.
 func WriteTo(w io.Writer, kg *KG) error {
+	// Acquire a read lock to ensure the graph isn't modified during serialization
+	kg.mu.RLock()
+	defer kg.mu.RUnlock()
+	
 	encoder := gob.NewEncoder(w)
 
 	// Register the Node type with gob
@@ -118,6 +122,10 @@ func ReadFrom(r io.Reader) (*KG, error) {
 // using JSON encoding. It converts the KG to a SerializableKG first to ensure
 // that the graph structure can be properly encoded in JSON format.
 func SaveToJSON(w io.Writer, kg *KG) error {
+	// Acquire a read lock to ensure the graph isn't modified during serialization
+	kg.mu.RLock()
+	defer kg.mu.RUnlock()
+	
 	encoder := json.NewEncoder(w)
 
 	// Create a serializable representation of the KG

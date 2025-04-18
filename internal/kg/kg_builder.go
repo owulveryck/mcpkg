@@ -6,6 +6,9 @@ import "gonum.org/v1/gonum/graph"
 // This method satisfies the graph.NodeAdder interface.
 // It increments the currentID counter to ensure unique IDs.
 func (kg *KG) NewNode() graph.Node {
+	kg.mu.Lock()
+	defer kg.mu.Unlock()
+	
 	n := &Node{
 		Identifier: kg.currentID,
 	}
@@ -17,6 +20,9 @@ func (kg *KG) NewNode() graph.Node {
 // AddNode adds a node to the graph. AddNode panics if
 // the added node ID matches an existing node ID.
 func (kg *KG) AddNode(n graph.Node) {
+	kg.mu.Lock()
+	defer kg.mu.Unlock()
+	
 	if _, exists := kg.nodes[n.ID()]; exists {
 		panic("graph: AddNode: node ID collision")
 	}
@@ -46,16 +52,29 @@ func (kg *KG) NewEdge(from graph.Node, to graph.Node) graph.Edge {
 // Whether e, e.From() and e.To() are stored
 // within the graph is implementation dependent.
 func (kg *KG) SetEdge(e graph.Edge) {
+	kg.mu.Lock()
+	defer kg.mu.Unlock()
+	
 	from := e.From()
 	to := e.To()
 
 	// Add nodes if they don't exist
 	if _, exists := kg.nodes[from.ID()]; !exists {
-		kg.AddNode(from)
+		// We're already holding the lock, so don't call AddNode which would try to acquire it again
+		node, ok := from.(*Node)
+		if !ok {
+			node = &Node{Identifier: from.ID()}
+		}
+		kg.nodes[from.ID()] = node
 	}
 
 	if _, exists := kg.nodes[to.ID()]; !exists {
-		kg.AddNode(to)
+		// We're already holding the lock, so don't call AddNode which would try to acquire it again
+		node, ok := to.(*Node)
+		if !ok {
+			node = &Node{Identifier: to.ID()}
+		}
+		kg.nodes[to.ID()] = node
 	}
 
 	// Create the predicate

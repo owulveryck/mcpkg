@@ -17,6 +17,8 @@
 //
 // - Serialization and deserialization for persistent storage
 //
+// - Thread-safety via a read-write mutex, making all operations safe for concurrent use
+//
 // The package is designed to be used for various knowledge representation tasks, such as
 // storing metadata, dependency information, relationships between resources, and more.
 //

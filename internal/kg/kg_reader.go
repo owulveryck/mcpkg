@@ -2,16 +2,18 @@ package kg
 
 import (
 	"gonum.org/v1/gonum/graph"
+	"sync"
 )
 
-// KG hold the knowledge graph
-// Warning: KG is not safe for concurrent use
+// KG holds the knowledge graph structure
+// It is safe for concurrent use as all operations are protected by a mutex.
 type KG struct {
 	nodes map[int64]*Node
 	from  map[int64]map[int64]*Predicate
 	to    map[int64]map[int64]*Predicate
 
 	currentID int64
+	mu        sync.RWMutex // protects concurrent access to the graph
 }
 
 // NewKG creates and initializes a new empty knowledge graph.
@@ -27,6 +29,8 @@ func NewKG() *KG {
 // Node returns the node with the given ID if it exists
 // in the graph, and nil otherwise.
 func (kg *KG) Node(id int64) graph.Node {
+	kg.mu.RLock()
+	defer kg.mu.RUnlock()
 	return kg.nodes[id]
 }
 
@@ -69,6 +73,9 @@ func (n *NodeList) Node() graph.Node {
 //
 // Nodes must not return nil.
 func (kg *KG) Nodes() graph.Nodes {
+	kg.mu.RLock()
+	defer kg.mu.RUnlock()
+
 	if len(kg.nodes) == 0 {
 		return NewNodeList(nil)
 	}
@@ -85,6 +92,9 @@ func (kg *KG) Nodes() graph.Nodes {
 //
 // From must not return nil.
 func (kg *KG) From(id int64) graph.Nodes {
+	kg.mu.RLock()
+	defer kg.mu.RUnlock()
+
 	if kg.from[id] == nil {
 		return NewNodeList(nil)
 	}
@@ -101,6 +111,9 @@ func (kg *KG) From(id int64) graph.Nodes {
 // HasEdgeBetween returns whether an edge exists between
 // nodes with IDs xid and yid without considering direction.
 func (kg *KG) HasEdgeBetween(xid int64, yid int64) bool {
+	kg.mu.RLock()
+	defer kg.mu.RUnlock()
+
 	// Check if there's an edge from xid to yid
 	if _, ok := kg.from[xid]; ok {
 		if _, ok := kg.from[xid][yid]; ok {
@@ -123,6 +136,9 @@ func (kg *KG) HasEdgeBetween(xid int64, yid int64) bool {
 // must be directly reachable from u as defined by the
 // From method.
 func (kg *KG) Edge(uid int64, vid int64) graph.Edge {
+	kg.mu.RLock()
+	defer kg.mu.RUnlock()
+
 	if _, ok := kg.from[uid]; !ok {
 		return nil
 	}
@@ -138,6 +154,9 @@ func (kg *KG) Edge(uid int64, vid int64) graph.Edge {
 // HasEdgeFromTo returns whether an edge exists
 // in the graph from u to v with IDs uid and vid.
 func (kg *KG) HasEdgeFromTo(uid int64, vid int64) bool {
+	kg.mu.RLock()
+	defer kg.mu.RUnlock()
+
 	if _, ok := kg.from[uid]; !ok {
 		return false
 	}
@@ -151,6 +170,9 @@ func (kg *KG) HasEdgeFromTo(uid int64, vid int64) bool {
 //
 // To must not return nil.
 func (kg *KG) To(id int64) graph.Nodes {
+	kg.mu.RLock()
+	defer kg.mu.RUnlock()
+
 	if kg.to[id] == nil {
 		return NewNodeList(nil)
 	}
