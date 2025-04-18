@@ -7,25 +7,60 @@ import "strings"
 // it creates new nodes for them. Then it creates a predicate connecting these nodes.
 // The caseSensitiveSearch parameter determines if node matching is case-sensitive.
 func (kg *KG) InsertTriple(subject, predicate, object string, caseSensitiveSearch bool) error {
+	kg.mu.Lock()
+	defer kg.mu.Unlock()
+	
 	// Check if the nodes already exist
 	var subjectNode, objectNode *Node
 
+	// We need to search for nodes without holding locks since we already have a write lock
+	// Local implementation of FindNode to avoid lock reacquisition
+	findNode := func(lexical string) *Node {
+		if kg.nodes == nil || len(kg.nodes) == 0 {
+			return nil
+		}
+
+		for _, node := range kg.nodes {
+			if node == nil || node.Lexical == "" {
+				continue
+			}
+
+			if caseSensitiveSearch {
+				if node.Lexical == lexical {
+					return node
+				}
+			} else {
+				if strings.EqualFold(node.Lexical, lexical) {
+					return node
+				}
+			}
+		}
+
+		return nil
+	}
+
 	// Get or create subject node
-	subjectNode = kg.FindNode(subject, caseSensitiveSearch)
+	subjectNode = findNode(subject)
 	if subjectNode == nil {
-		// Create new subject node
-		newNode := kg.NewNode().(*Node)
-		newNode.Lexical = subject
-		subjectNode = newNode
+		// Create new subject node without calling kg.NewNode() to avoid lock reacquisition
+		subjectNode = &Node{
+			Identifier: kg.currentID,
+			Lexical:    subject,
+		}
+		kg.nodes[kg.currentID] = subjectNode
+		kg.currentID++
 	}
 
 	// Get or create object node
-	objectNode = kg.FindNode(object, caseSensitiveSearch)
+	objectNode = findNode(object)
 	if objectNode == nil {
-		// Create new object node
-		newNode := kg.NewNode().(*Node)
-		newNode.Lexical = object
-		objectNode = newNode
+		// Create new object node without calling kg.NewNode() to avoid lock reacquisition
+		objectNode = &Node{
+			Identifier: kg.currentID,
+			Lexical:    object,
+		}
+		kg.nodes[kg.currentID] = objectNode
+		kg.currentID++
 	}
 
 	// Create and set the predicate
@@ -35,8 +70,18 @@ func (kg *KG) InsertTriple(subject, predicate, object string, caseSensitiveSearc
 		Subject: predicate,
 	}
 
-	// Add the edge to the graph
-	kg.SetEdge(pred)
+	// Add the edge to the graph without calling kg.SetEdge() to avoid lock reacquisition
+	// Initialize maps if they don't exist
+	if kg.from[subjectNode.ID()] == nil {
+		kg.from[subjectNode.ID()] = make(map[int64]*Predicate)
+	}
+	if kg.to[objectNode.ID()] == nil {
+		kg.to[objectNode.ID()] = make(map[int64]*Predicate)
+	}
+
+	// Set the edge in both maps
+	kg.from[subjectNode.ID()][objectNode.ID()] = pred
+	kg.to[objectNode.ID()][subjectNode.ID()] = pred
 
 	return nil
 }
@@ -46,6 +91,9 @@ func (kg *KG) InsertTriple(subject, predicate, object string, caseSensitiveSearc
 // The caseSensitiveSearch parameter determines if the comparison is case-sensitive.
 // It returns nil if no matching node is found.
 func (kg *KG) FindNode(subject string, caseSensitiveSearch bool) *Node {
+	kg.mu.RLock()
+	defer kg.mu.RUnlock()
+	
 	if kg.nodes == nil || len(kg.nodes) == 0 {
 		return nil
 	}
@@ -74,6 +122,9 @@ func (kg *KG) FindNode(subject string, caseSensitiveSearch bool) *Node {
 // The caseSensitiveSearch parameter determines if the comparison is case-sensitive.
 // It returns nil if no matching predicate is found.
 func (kg *KG) FindPredicate(subject string, caseSensitiveSearch bool) *Predicate {
+	kg.mu.RLock()
+	defer kg.mu.RUnlock()
+	
 	if kg.from == nil || len(kg.from) == 0 {
 		return nil
 	}
@@ -102,6 +153,9 @@ func (kg *KG) FindPredicate(subject string, caseSensitiveSearch bool) *Predicate
 // ListAllPredicates returns all unique predicate subjects in the knowledge graph.
 // It returns an empty slice if there are no predicates in the graph.
 func (kg *KG) ListAllPredicates() []string {
+	kg.mu.RLock()
+	defer kg.mu.RUnlock()
+	
 	if kg.from == nil || len(kg.from) == 0 {
 		return []string{}
 	}
@@ -128,6 +182,9 @@ func (kg *KG) ListAllPredicates() []string {
 // ListNodes returns the lexical values of all nodes in the knowledge graph.
 // It returns an empty slice if there are no nodes in the graph.
 func (kg *KG) ListNodes() []string {
+	kg.mu.RLock()
+	defer kg.mu.RUnlock()
+	
 	if kg.nodes == nil || len(kg.nodes) == 0 {
 		return []string{}
 	}
@@ -140,4 +197,91 @@ func (kg *KG) ListNodes() []string {
 	}
 
 	return nodes
+}
+
+// RemoveTriple removes a triple from the knowledge graph based on the provided subject, predicate, and object values.
+// The caseSensitiveSearch parameter determines if the node and predicate matching is case-sensitive.
+// It returns true if the triple was found and successfully removed, false otherwise.
+func (kg *KG) RemoveTriple(subject, predicate, object string, caseSensitiveSearch bool) bool {
+	// Check for nil graph
+	if kg == nil {
+		return false
+	}
+
+	kg.mu.Lock()
+	defer kg.mu.Unlock()
+	
+	// Local implementation of FindNode to avoid lock reacquisition
+	findNode := func(lexical string) *Node {
+		if kg.nodes == nil || len(kg.nodes) == 0 {
+			return nil
+		}
+
+		for _, node := range kg.nodes {
+			if node == nil || node.Lexical == "" {
+				continue
+			}
+
+			if caseSensitiveSearch {
+				if node.Lexical == lexical {
+					return node
+				}
+			} else {
+				if strings.EqualFold(node.Lexical, lexical) {
+					return node
+				}
+			}
+		}
+
+		return nil
+	}
+
+	// Find the subject and object nodes
+	subjectNode := findNode(subject)
+	if subjectNode == nil {
+		return false
+	}
+
+	objectNode := findNode(object)
+	if objectNode == nil {
+		return false
+	}
+
+	// Check if a predicate exists between these nodes
+	if kg.from[subjectNode.ID()] == nil {
+		return false
+	}
+
+	pred := kg.from[subjectNode.ID()][objectNode.ID()]
+	if pred == nil {
+		return false
+	}
+
+	// Check if the predicate matches
+	matches := false
+	if caseSensitiveSearch {
+		matches = pred.Subject == predicate
+	} else {
+		matches = strings.EqualFold(pred.Subject, predicate)
+	}
+
+	if !matches {
+		return false
+	}
+
+	// Remove the predicate from both maps
+	delete(kg.from[subjectNode.ID()], objectNode.ID())
+	delete(kg.to[objectNode.ID()], subjectNode.ID())
+
+	// If the subject node has no more outgoing edges, clean up the empty map
+	if len(kg.from[subjectNode.ID()]) == 0 {
+		delete(kg.from, subjectNode.ID())
+	}
+
+	// If the object node has no more incoming edges, clean up the empty map
+	if len(kg.to[objectNode.ID()]) == 0 {
+		delete(kg.to, objectNode.ID())
+	}
+
+	return true
 }

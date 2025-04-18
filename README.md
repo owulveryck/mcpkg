@@ -9,6 +9,7 @@ MCPKG is a Go implementation of a knowledge graph system that is exposed through
 - Persistent storage through serialization
 - MCP server interface for programmatic access
 - Custom URI format for graph queries
+- Thread-safe implementation for concurrent use
 
 ## Components
 
@@ -19,6 +20,7 @@ The core data structure that:
 - Represents relationships as predicates (edges)
 - Provides methods for inserting and querying triples
 - Supports serialization and deserialization
+- Ensures concurrent safety with a read-write mutex
 
 ### MCP Server
 

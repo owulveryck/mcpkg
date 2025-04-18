@@ -12,6 +12,9 @@ func (kg *KG) ListPredicatesFromNode(subject string, caseSensitiveSearch bool) [
 		return nil
 	}
 
+	kg.mu.RLock()
+	defer kg.mu.RUnlock()
+
 	// Find the node
 	node := kg.FindNode(subject, caseSensitiveSearch)
 	if node == nil {
@@ -45,6 +48,9 @@ func (kg *KG) ListPredicatesToNode(subject string, caseSensitiveSearch bool) []*
 		return nil
 	}
 
+	kg.mu.RLock()
+	defer kg.mu.RUnlock()
+
 	// Find the node
 	node := kg.FindNode(subject, caseSensitiveSearch)
 	if node == nil {
@@ -77,6 +83,9 @@ func (kg *KG) PredicatesFromTo(fromSubject, toSubject string, caseSensitiveSearc
 	if kg == nil {
 		return nil
 	}
+
+	kg.mu.RLock()
+	defer kg.mu.RUnlock()
 
 	// Find the nodes
 	fromNode := kg.FindNode(fromSubject, caseSensitiveSearch)
@@ -115,6 +124,9 @@ func (kg *KG) QueryBySubject(subject string, caseSensitiveSearch bool) map[strin
 	if kg == nil {
 		return nil
 	}
+
+	kg.mu.RLock()
+	defer kg.mu.RUnlock()
 
 	subjectNode := kg.FindNode(subject, caseSensitiveSearch)
 	if subjectNode == nil {
@@ -162,6 +174,9 @@ func (kg *KG) QueryByObject(object string, caseSensitiveSearch bool) map[string]
 		return nil
 	}
 
+	kg.mu.RLock()
+	defer kg.mu.RUnlock()
+
 	objectNode := kg.FindNode(object, caseSensitiveSearch)
 	if objectNode == nil {
 		return nil
@@ -206,6 +221,9 @@ func (kg *KG) QueryByPredicate(predicate string, caseSensitiveSearch bool) [][2]
 	if kg == nil {
 		return nil
 	}
+
+	kg.mu.RLock()
+	defer kg.mu.RUnlock()
 
 	var result [][2]string
 
@@ -261,6 +279,9 @@ func (kg *KG) FindTriples(subject, predicate, object string, caseSensitiveSearch
 		return nil
 	}
 
+	kg.mu.RLock()
+	defer kg.mu.RUnlock()
+
 	var result [][3]string
 
 	// If no edges exist, return empty result
@@ -299,6 +320,64 @@ func (kg *KG) FindTriples(subject, predicate, object string, caseSensitiveSearch
 			if matchesPattern(fromNode.Lexical, subject) &&
 				matchesPattern(pred.Subject, predicate) &&
 				matchesPattern(toNode.Lexical, object) {
+				// Add the matching triple to the result
+				result = append(result, [3]string{fromNode.Lexical, pred.Subject, toNode.Lexical})
+			}
+		}
+	}
+
+	return result
+}
+
+// DescribeEntity returns all triples where the entity appears as either subject or object.
+// This provides a comprehensive view of an entity within the knowledge graph.
+// The caseSensitiveSearch parameter determines if entity matching is case-sensitive.
+// It returns an empty array if the entity does not exist or has no connections.
+func (kg *KG) DescribeEntity(entity string, caseSensitiveSearch bool) [][3]string {
+	// Check for nil graph
+	if kg == nil {
+		return nil
+	}
+
+	kg.mu.RLock()
+	defer kg.mu.RUnlock()
+
+	var result [][3]string
+
+	// If no edges exist, return empty result
+	if kg.from == nil || len(kg.from) == 0 {
+		return result
+	}
+
+	// Helper function to check if a string matches a pattern (empty pattern matches anything)
+	matchesPattern := func(value, pattern string) bool {
+		if pattern == "" {
+			return true // Empty pattern matches any value
+		}
+
+		if caseSensitiveSearch {
+			return value == pattern
+		}
+
+		return strings.EqualFold(value, pattern)
+	}
+
+	// Get all triples in one pass to avoid nested lock acquisition
+	for _, toMap := range kg.from {
+		for _, pred := range toMap {
+			if pred == nil || pred.Subject == "" {
+				continue
+			}
+
+			fromNode := pred.F.(*Node)
+			toNode := pred.T.(*Node)
+
+			if fromNode == nil || toNode == nil || fromNode.Lexical == "" || toNode.Lexical == "" {
+				continue
+			}
+
+			// Check if entity appears as subject or object
+			if matchesPattern(fromNode.Lexical, entity) || matchesPattern(toNode.Lexical, entity) {
 				// Add the matching triple to the result
 				result = append(result, [3]string{fromNode.Lexical, pred.Subject, toNode.Lexical})
 			}
