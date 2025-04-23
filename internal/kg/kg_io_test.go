@@ -10,7 +10,7 @@ import (
 
 // createTestGraph creates a simple knowledge graph for testing
 func createTestGraph() *KG {
-	kg := NewKG()
+	kg := NewKG("sample")
 
 	// Create nodes
 	node1 := kg.NewNode().(*Node)
@@ -263,7 +263,7 @@ func TestRoundTripComparison(t *testing.T) {
 // The following tests cover specific graph functions for better code coverage
 
 func TestAddNode(t *testing.T) {
-	kg := NewKG()
+	kg := NewKG("sample")
 	assert := assert.New(t)
 
 	// Create a custom node
@@ -406,7 +406,7 @@ func TestPredicateMethods(t *testing.T) {
 }
 
 func TestSetEdge(t *testing.T) {
-	kg := NewKG()
+	kg := NewKG("sample")
 	assert := assert.New(t)
 
 	// Create nodes
@@ -480,7 +480,7 @@ func (e GraphEdgeMock) ReversedEdge() graph.Edge {
 
 func TestNodesEmptyGraph(t *testing.T) {
 	// Create an empty graph
-	emptyKG := NewKG()
+	emptyKG := NewKG("sample")
 	assert := assert.New(t)
 
 	// Test Nodes() on empty graph
@@ -509,7 +509,7 @@ func TestNodeIDPreservation(t *testing.T) {
 	assert := assert.New(t)
 
 	// Create a graph with nodes that have specific IDs
-	kg := NewKG()
+	kg := NewKG("sample")
 
 	// Manually create nodes with specific IDs and add them to the graph
 	node1 := &Node{Identifier: 100, Lexical: "Node 100"}

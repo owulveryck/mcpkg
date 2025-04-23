@@ -7,7 +7,7 @@ import (
 )
 
 func TestInsertTriple(t *testing.T) {
-	kg := NewKG()
+	kg := NewKG("sample")
 	assert := assert.New(t)
 
 	// Insert a triple
@@ -70,7 +70,7 @@ func TestInsertTriple(t *testing.T) {
 }
 
 func TestFindNode(t *testing.T) {
-	kg := NewKG()
+	kg := NewKG("sample")
 	assert := assert.New(t)
 
 	// Create some nodes
@@ -97,13 +97,13 @@ func TestFindNode(t *testing.T) {
 	assert.Nil(foundNode, "Non-existent node should not be found")
 
 	// Test empty graph
-	emptyKG := NewKG()
+	emptyKG := NewKG("sample")
 	foundNode = emptyKG.FindNode("Any Node", true)
 	assert.Nil(foundNode, "Empty graph should not find any nodes")
 }
 
 func TestFindPredicate(t *testing.T) {
-	kg := NewKG()
+	kg := NewKG("sample")
 	assert := assert.New(t)
 
 	// Create nodes and predicates
@@ -136,13 +136,13 @@ func TestFindPredicate(t *testing.T) {
 	assert.Nil(foundPred, "Non-existent predicate should not be found")
 
 	// Test empty graph
-	emptyKG := NewKG()
+	emptyKG := NewKG("sample")
 	foundPred = emptyKG.FindPredicate("Any Predicate", true)
 	assert.Nil(foundPred, "Empty graph should not find any predicates")
 }
 
 func TestListAllPredicates(t *testing.T) {
-	kg := NewKG()
+	kg := NewKG("sample")
 	assert := assert.New(t)
 
 	// Create nodes and predicates
@@ -175,13 +175,13 @@ func TestListAllPredicates(t *testing.T) {
 	assert.Contains(predicates, "Predicate 2", "Should contain Predicate 2")
 
 	// Test empty graph
-	emptyKG := NewKG()
+	emptyKG := NewKG("sample")
 	predicates = emptyKG.ListAllPredicates()
 	assert.Empty(predicates, "Empty graph should return empty predicate list")
 }
 
 func TestListNodes(t *testing.T) {
-	kg := NewKG()
+	kg := NewKG("sample")
 	assert := assert.New(t)
 
 	// Create some nodes
@@ -206,7 +206,7 @@ func TestListNodes(t *testing.T) {
 	assert.NotContains(nodes, "", "Should not contain empty node")
 
 	// Test empty graph
-	emptyKG := NewKG()
+	emptyKG := NewKG("sample")
 	nodes = emptyKG.ListNodes()
 	assert.Empty(nodes, "Empty graph should return empty node list")
 }

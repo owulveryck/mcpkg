@@ -128,6 +128,8 @@ insert_triple(path="/Users/username/citations.kg", subject="Paper A", predicate=
 - You can build multiple specialized knowledge graphs for different domains
 - Use wildcards in find_triples by omitting parameters to get broader results`),
 		server.WithResourceCapabilities(false, false),
+		server.WithPromptCapabilities(false),
+
 		server.WithLogging(),
 		server.WithRecovery(),
 	)
@@ -137,6 +139,7 @@ insert_triple(path="/Users/username/citations.kg", subject="Paper A", predicate=
 	s.AddTool(RemoveTriple(), RemoveTripleHandler)
 	s.AddTool(FindTriples(), FindTriplesHandler)
 	s.AddTool(DescribeEntity(), DescribeEntityHandler)
+	s.AddPrompt(GetPrompt(), GetPromptHandler)
 
 	return s
 }

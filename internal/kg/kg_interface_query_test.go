@@ -9,7 +9,7 @@ import (
 
 // createQueryTestGraph creates a knowledge graph for testing query functions
 func createQueryTestGraph() *KG {
-	kg := NewKG()
+	kg := NewKG("sample")
 
 	// Create nodes
 	person1 := kg.NewNode().(*Node)
@@ -230,7 +230,7 @@ func TestQueryByPredicate(t *testing.T) {
 	assert.Nil(nilResults, "Results should be nil for non-existent predicate")
 
 	// Test for empty graph
-	emptyKG := NewKG()
+	emptyKG := NewKG("sample")
 	emptyResults := emptyKG.QueryByPredicate("owns", true)
 	assert.Nil(emptyResults, "Results should be nil for empty graph")
 
@@ -271,7 +271,7 @@ func TestFindTriples(t *testing.T) {
 	assert.Empty(nonMatchingTriples, "Should find no triples with non-matching criteria")
 
 	// Test with empty graph
-	emptyKG := NewKG()
+	emptyKG := NewKG("sample")
 	emptyTriples := emptyKG.FindTriples("", "", "", true)
 	assert.Empty(emptyTriples, "Should find no triples in empty graph")
 

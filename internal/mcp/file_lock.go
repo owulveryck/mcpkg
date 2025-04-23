@@ -42,7 +42,7 @@ func (fm *fileLockManager) getFileLock(path string) *sync.RWMutex {
 func ReadKnowledgeGraph(path string) (*kg.KG, error) {
 	// Get the file lock
 	lock := fileManager.getFileLock(path)
-	
+
 	// Acquire a read lock
 	lock.RLock()
 	defer lock.RUnlock()
@@ -59,7 +59,7 @@ func ReadKnowledgeGraph(path string) (*kg.KG, error) {
 	if err != nil {
 		if err == io.EOF {
 			// Empty file, return a new KG
-			return kg.NewKG(), nil
+			return kg.NewKG(""), nil
 		}
 		return nil, err
 	}
@@ -73,7 +73,7 @@ func ReadKnowledgeGraph(path string) (*kg.KG, error) {
 func WriteKnowledgeGraph(path string, graph *kg.KG) error {
 	// Get the file lock
 	lock := fileManager.getFileLock(path)
-	
+
 	// Acquire a write lock
 	lock.Lock()
 	defer lock.Unlock()
@@ -95,7 +95,7 @@ func WriteKnowledgeGraph(path string, graph *kg.KG) error {
 func ModifyKnowledgeGraph(path string, modifier func(*kg.KG) error) error {
 	// Get the file lock
 	lock := fileManager.getFileLock(path)
-	
+
 	// Acquire a write lock
 	lock.Lock()
 	defer lock.Unlock()
@@ -113,7 +113,7 @@ func ModifyKnowledgeGraph(path string, modifier func(*kg.KG) error) error {
 		if err != io.EOF {
 			return err
 		}
-		graph = kg.NewKG()
+		graph = kg.NewKG("")
 	}
 
 	// Apply the modification
@@ -125,7 +125,7 @@ func ModifyKnowledgeGraph(path string, modifier func(*kg.KG) error) error {
 	if err := f.Truncate(0); err != nil {
 		return err
 	}
-	
+
 	// Reset the file pointer to the beginning
 	if _, err := f.Seek(0, 0); err != nil {
 		return err

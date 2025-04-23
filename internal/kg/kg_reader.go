@@ -1,16 +1,18 @@
 package kg
 
 import (
-	"gonum.org/v1/gonum/graph"
 	"sync"
+
+	"gonum.org/v1/gonum/graph"
 )
 
 // KG holds the knowledge graph structure
 // It is safe for concurrent use as all operations are protected by a mutex.
 type KG struct {
-	nodes map[int64]*Node
-	from  map[int64]map[int64]*Predicate
-	to    map[int64]map[int64]*Predicate
+	SystemPrompt string
+	nodes        map[int64]*Node
+	from         map[int64]map[int64]*Predicate
+	to           map[int64]map[int64]*Predicate
 
 	currentID int64
 	mu        sync.RWMutex // protects concurrent access to the graph
@@ -18,11 +20,12 @@ type KG struct {
 
 // NewKG creates and initializes a new empty knowledge graph.
 // It returns a pointer to the new KG with initialized maps for nodes, from, and to relationships.
-func NewKG() *KG {
+func NewKG(systemPrompt string) *KG {
 	return &KG{
-		nodes: make(map[int64]*Node),
-		from:  make(map[int64]map[int64]*Predicate),
-		to:    make(map[int64]map[int64]*Predicate),
+		SystemPrompt: systemPrompt,
+		nodes:        make(map[int64]*Node),
+		from:         make(map[int64]map[int64]*Predicate),
+		to:           make(map[int64]map[int64]*Predicate),
 	}
 }
 
